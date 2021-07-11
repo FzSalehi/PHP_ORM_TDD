@@ -1,0 +1,15 @@
+{
+    "name": "faraz/tdd_orm",
+    "description": "a practice project to create ORM using TDD",
+    "type": "project",
+    "require": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "faraz salehi",
+            "email": "faraz67fz@gmail.com"
+        }
+    ]
+}
