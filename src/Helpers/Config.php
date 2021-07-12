@@ -14,7 +14,7 @@ class Config
             throw new ConfigFileNotFoundExeption();
         }
 
-        return require_once $filepath;
+        return require $filepath;
     }
 
     public static function get(string $filename,$key = null)
@@ -24,6 +24,7 @@ class Config
         if(is_null($key)) return $filecontents;
 
         return $filecontents[$key] ?? null;
+
     }
 }
 
