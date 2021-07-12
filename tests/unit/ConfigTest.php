@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
+    
     /**
      * @test
      */
@@ -18,6 +19,7 @@ class ConfigTest extends TestCase
 
         return $filecontent;
     }
+
     /**
      * @test
      */
@@ -25,36 +27,25 @@ class ConfigTest extends TestCase
     {
         $this->expectException('App\Exceptions\ConfigFileNotFoundExeption');
 
-        $filecontent = Config::getFileContents('foo');
+        Config::getFileContents('foo');
     }
+
     /**
      * @test
-     * @depends getFileContentsMethodReturnsArray
      */
-    public function getFileContentShouldReturnExpectedArray(array $filecontent)
+    public function getMethodReturnsValidData()
     {
-        $expecteddata = [
-            'pdo' => [
-                'driver' => 'mysql',
-                'host' => '127.0.0.1',
-                'database' => 'php_tdd_orm',
-                'db_user' => 'root',
-                'db_password' => '123456',
-            ]
+        $config = Config::get('database', 'pdo');
+
+        $expecteddata =  [
+            'driver' => 'mysql',
+            'host' => '127.0.0.1',
+            'database' => 'php_tdd_orm',
+            'db_user' => 'root',
+            'db_password' => '123456',
         ];
 
-        $this->assertEquals($expecteddata,$filecontent);
+        $this->assertEquals($expecteddata, $config);
     }
 
-    /**
-     * todo: fix this test
-     */
-    public function getMethodReturnsArray()
-    {
-        $pdoconfig = Config::get('database', 'pdo');
-        
-        var_dump($pdoconfig);
-
-        $this->assertIsArray($pdoconfig);
-    }
 }
