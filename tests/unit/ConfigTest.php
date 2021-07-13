@@ -42,7 +42,7 @@ class ConfigTest extends TestCase
             'host' => '127.0.0.1',
             'database' => 'php_tdd_orm',
             'db_user' => 'root',
-            'db_password' => '123456',
+            'db_password' => '',
         ];
 
         $this->assertEquals($expecteddata, $config);
