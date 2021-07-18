@@ -14,7 +14,7 @@ class PDOQueryBuilderTest extends TestCase
 
     private $queryBuilder;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->pdo = new PDODatabaseConnection($this->getConfig());
 
@@ -22,29 +22,36 @@ class PDOQueryBuilderTest extends TestCase
 
         $this->queryBuilder = new PDOQueryBuilder($this->pdo);
 
-
+        parent::setUp();
     }
+
+    public function tearDown(): void
+    {
+        $this->queryBuilder->truncateAllTables();
+
+        parent::tearDown();
+    }
+
     /**
      * @test
      */
     public function itCanCreateData()
     {
-        
+        // we are assuming that user wants to report a bug for a linked page
         $result = $this->insertIntoDB();
 
         $this->assertIsInt($result);
 
-        $this->assertGreaterThan(0,$result);
+        $this->assertGreaterThan(0, $result);
 
-        return $result;
     }
 
     /**
      * @test
-     * @depends itCanCreateData
      */
-    public function itCanUpdateExistedData($id)
+    public function itCanUpdateExistedData()
     {
+        $id = $this->insertIntoDB();
 
         $data = [
             'text' => 'some other text',
@@ -52,31 +59,28 @@ class PDOQueryBuilderTest extends TestCase
         ];
 
         $result = $this->queryBuilder
-                        ->table('bugs')
-                        ->where('id',$id)
-                        ->where('text','some text')
-                        ->update($data);
+            ->table('bugs')
+            ->where('id', $id)
+            ->where('text', 'some text')
+            ->update($data);
 
         $this->assertEquals(1, $result);
-
     }
 
     private function insertIntoDB()
     {
-        
-        // we are assuming that user wants to report a bug for a linked page
         $data = [
             'title' => 'bug title',
             'text' => 'some text',
             'link' =>  'http://link.fz',
-            'user_id' => rand(2,10),
+            'user_id' => rand(2, 10),
         ];
 
         return $this->queryBuilder->table('bugs')->create($data);
     }
+
     private function getConfig()
     {
         return Config::get('database', 'pdo_testing');
     }
-
 }
