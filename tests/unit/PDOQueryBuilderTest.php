@@ -22,12 +22,16 @@ class PDOQueryBuilderTest extends TestCase
 
         $this->queryBuilder = new PDOQueryBuilder($this->pdo);
 
+        $this->queryBuilder->beginTransaction();
+
         parent::setUp();
     }
 
     public function tearDown(): void
     {
-        $this->queryBuilder->truncateAllTables();
+        //$this->queryBuilder->truncateAllTables();
+
+        $this->queryBuilder->rollBack();
 
         parent::tearDown();
     }
@@ -43,7 +47,6 @@ class PDOQueryBuilderTest extends TestCase
         $this->assertIsInt($result);
 
         $this->assertGreaterThan(0, $result);
-
     }
 
     /**
@@ -51,6 +54,7 @@ class PDOQueryBuilderTest extends TestCase
      */
     public function itCanUpdateExistedData()
     {
+
         $id = $this->insertIntoDB();
 
         $data = [
@@ -65,6 +69,34 @@ class PDOQueryBuilderTest extends TestCase
             ->update($data);
 
         $this->assertEquals(1, $result);
+    }
+    /**
+     * @test
+     */
+    public function itCanDeleteRecords()
+    {
+        // create 4 records
+        $this->insertIntoDB();
+        $this->insertIntoDB();
+        $this->insertIntoDB();
+        $this->insertIntoDB();
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title', 'bug title')
+            ->delete();
+
+        $this->assertEquals(4,$result);
+    }
+
+    public function beginTransaction()
+    {
+        $this->pdo->beginTransaction();
+    }
+
+    public function rollBack()
+    {
+        $this->pdo->rollBack(); 
     }
 
     private function insertIntoDB()

@@ -64,13 +64,12 @@ class PDOQueryBuilder
         foreach ($data as $column => $value) {
             $fields[] = "{$column} = '{$value}'";
         }
-        
+
         $fields = implode(',', $fields);
 
-        $conditions = implode(' and ' , $this->conditions);
+        $conditions = implode(' and ', $this->conditions);
 
         $sql = "UPDATE {$this->table} SET {$fields} WHERE {$conditions}";
-        
 
         $query = $this->pdo->prepare($sql);
 
@@ -79,15 +78,41 @@ class PDOQueryBuilder
         return $query->rowCount();
     }
 
+
+    public function delete()
+    {
+        $conditions = implode(' and ', $this->conditions);
+
+        $sql = "DELETE FROM {$this->table} WHERE {$conditions}";
+        
+        $query = $this->pdo->prepare($sql);
+
+        $query->execute($this->values);
+
+        return $query->rowCount();
+    }
+    
+
+    public function beginTransaction()
+    {
+        $this->pdo->beginTransaction();
+    }
+
+    public function rollBack()
+    {
+        $this->pdo->rollBack();
+    }
+
     public function truncateAllTables()
     {
+        
         $query = $this->pdo->prepare('SHOW TABLES');
+
         $query->execute();
 
-        foreach($query->fetchAll(PDO::FETCH_COLUMN) as $table){
+        foreach ($query->fetchAll(PDO::FETCH_COLUMN) as $table) {
 
             $this->pdo->prepare("truncate `{$table}`")->execute();
-
         }
     }
 }
