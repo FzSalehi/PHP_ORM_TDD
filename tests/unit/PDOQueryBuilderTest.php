@@ -130,6 +130,30 @@ class PDOQueryBuilderTest extends TestCase
         $this->assertEquals(['title','link'],array_keys($result));
 
     }
+
+    /**
+     * @test
+     */
+    public function itCanFetchFirstRecord()
+    {
+        $this->multiInsertintoDB(4);
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title','bug title')
+            ->first();
+
+        $this->assertIsObject($result);
+
+        $this->assertObjectHasAttribute('title',$result);
+
+        $this->assertObjectHasAttribute('text',$result);
+
+        $this->assertObjectHasAttribute('link',$result);
+
+        $this->assertObjectHasAttribute('user_id',$result);
+    }
+    
     public function beginTransaction()
     {
         $this->pdo->beginTransaction();

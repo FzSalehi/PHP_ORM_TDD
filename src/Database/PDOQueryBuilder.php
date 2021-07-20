@@ -94,7 +94,6 @@ class PDOQueryBuilder
 
     public function get(array $columns = ['*'])
     {
-
         $conditions = implode(' and ', $this->conditions);
 
         $columns = implode(',', $columns);
@@ -106,6 +105,13 @@ class PDOQueryBuilder
         $query->execute($this->values);
 
         return $query->fetchAll();
+    }
+
+    public function first(array $columns = ['*'])
+    {
+        $data = $this->get();
+        
+        return empty($data) ? null : $data[0];   
     }
 
 
