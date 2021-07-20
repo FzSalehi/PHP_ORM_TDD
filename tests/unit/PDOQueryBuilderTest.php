@@ -54,9 +54,13 @@ class PDOQueryBuilderTest extends TestCase
      */
     public function itCanUpdateExistedData()
     {
+        // create two records
+        $firstrecordid = $this->insertIntoDB();
+        $this->insertIntoDB([
+            'text' => 'second text'
+        ]);
 
-        $id = $this->insertIntoDB();
-
+        // requiested updating data
         $data = [
             'text' => 'some other text',
             'link' => 'http://link.fz2',
@@ -64,7 +68,7 @@ class PDOQueryBuilderTest extends TestCase
 
         $result = $this->queryBuilder
             ->table('bugs')
-            ->where('id', $id)
+            ->where('id', $firstrecordid)
             ->where('text', 'some text')
             ->update($data);
 
@@ -86,9 +90,46 @@ class PDOQueryBuilderTest extends TestCase
             ->where('title', 'bug title')
             ->delete();
 
-        $this->assertEquals(4,$result);
+        $this->assertEquals(4, $result);
     }
 
+    /**
+     * @test
+     */
+    public function itCanFetchData()
+    {
+        $this->multiInsertintoDB(4);
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title','bug title')
+            ->get();
+
+        $this->assertEquals(4,count($result));
+    }
+
+    /**
+     * @test
+     */
+    public function itCanFetchDesireColumns()
+    {
+        $this->multiInsertintoDB(4);
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title','bug title')
+            ->get(['title','link']);
+
+        $this->assertIsArray($result);
+
+        $this->assertObjectHasAttribute('title',$result[0]);
+        $this->assertObjectHasAttribute('link',$result[0]);
+
+        $result = json_decode(json_encode($result[0]) , true);
+
+        $this->assertEquals(['title','link'],array_keys($result));
+
+    }
     public function beginTransaction()
     {
         $this->pdo->beginTransaction();
@@ -96,17 +137,26 @@ class PDOQueryBuilderTest extends TestCase
 
     public function rollBack()
     {
-        $this->pdo->rollBack(); 
+        $this->pdo->rollBack();
     }
 
-    private function insertIntoDB()
+    public function multiInsertintoDB(int $count, array $options = [])
     {
-        $data = [
+        for ($i = 1; $i <= $count; $i++) {
+            $this->insertIntoDB($options);
+        }
+        
+    }
+
+    private function insertIntoDB(array $options = [])
+    {
+
+        $data = array_merge([
             'title' => 'bug title',
             'text' => 'some text',
             'link' =>  'http://link.fz',
             'user_id' => rand(2, 10),
-        ];
+        ], $options);
 
         return $this->queryBuilder->table('bugs')->create($data);
     }

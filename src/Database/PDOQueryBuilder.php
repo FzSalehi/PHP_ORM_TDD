@@ -84,14 +84,30 @@ class PDOQueryBuilder
         $conditions = implode(' and ', $this->conditions);
 
         $sql = "DELETE FROM {$this->table} WHERE {$conditions}";
-        
+
         $query = $this->pdo->prepare($sql);
 
         $query->execute($this->values);
 
         return $query->rowCount();
     }
-    
+
+    public function get(array $columns = ['*'])
+    {
+
+        $conditions = implode(' and ', $this->conditions);
+
+        $columns = implode(',', $columns);
+
+        $sql = "SELECT {$columns} FROM {$this->table} WHERE {$conditions}";
+
+        $query = $this->pdo->prepare($sql);
+
+        $query->execute($this->values);
+
+        return $query->fetchAll();
+    }
+
 
     public function beginTransaction()
     {
@@ -105,7 +121,7 @@ class PDOQueryBuilder
 
     public function truncateAllTables()
     {
-        
+
         $query = $this->pdo->prepare('SHOW TABLES');
 
         $query->execute();
