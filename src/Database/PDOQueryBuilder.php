@@ -110,8 +110,18 @@ class PDOQueryBuilder
     public function first(array $columns = ['*'])
     {
         $data = $this->get();
-        
-        return empty($data) ? null : $data[0];   
+
+        return empty($data) ? null : $data[0];
+    }
+
+    public function find(int $id)
+    {
+        return $this->where('id', $id)->first();
+    }
+
+    public function findBy(string $column, $value)
+    {
+        return $this->where($column, $value)->first();
     }
 
 

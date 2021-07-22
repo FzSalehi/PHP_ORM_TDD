@@ -102,10 +102,10 @@ class PDOQueryBuilderTest extends TestCase
 
         $result = $this->queryBuilder
             ->table('bugs')
-            ->where('title','bug title')
+            ->where('title', 'bug title')
             ->get();
 
-        $this->assertEquals(4,count($result));
+        $this->assertEquals(4, count($result));
     }
 
     /**
@@ -117,18 +117,17 @@ class PDOQueryBuilderTest extends TestCase
 
         $result = $this->queryBuilder
             ->table('bugs')
-            ->where('title','bug title')
-            ->get(['title','link']);
+            ->where('title', 'bug title')
+            ->get(['title', 'link']);
 
         $this->assertIsArray($result);
 
-        $this->assertObjectHasAttribute('title',$result[0]);
-        $this->assertObjectHasAttribute('link',$result[0]);
+        $this->assertObjectHasAttribute('title', $result[0]);
+        $this->assertObjectHasAttribute('link', $result[0]);
 
-        $result = json_decode(json_encode($result[0]) , true);
+        $result = json_decode(json_encode($result[0]), true);
 
-        $this->assertEquals(['title','link'],array_keys($result));
-
+        $this->assertEquals(['title', 'link'], array_keys($result));
     }
 
     /**
@@ -140,20 +139,52 @@ class PDOQueryBuilderTest extends TestCase
 
         $result = $this->queryBuilder
             ->table('bugs')
-            ->where('title','bug title')
+            ->where('title', 'bug title')
             ->first();
 
         $this->assertIsObject($result);
 
-        $this->assertObjectHasAttribute('title',$result);
+        $this->assertObjectHasAttribute('title', $result);
 
-        $this->assertObjectHasAttribute('text',$result);
+        $this->assertObjectHasAttribute('text', $result);
 
-        $this->assertObjectHasAttribute('link',$result);
+        $this->assertObjectHasAttribute('link', $result);
 
-        $this->assertObjectHasAttribute('user_id',$result);
+        $this->assertObjectHasAttribute('user_id', $result);
     }
-    
+
+    /**
+     * @test
+     */
+    public function itCanFindById()
+    {
+        $this->insertIntoDB();
+        $id = $this->insertIntoDB(['title' => 'find by id']);
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->find($id);
+
+        $this->assertIsObject($result);
+        $this->assertEquals('find by id', $result->title);
+    }
+
+    /**
+     * @test
+     */
+    public function itCanFindByAnyAttribute()
+    {
+        $this->insertIntoDB();
+        $this->insertIntoDB(['title' => 'find by attr']);
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->findBy('title', 'find by attr');
+
+        $this->assertIsObject($result);
+
+        $this->assertEquals('find by attr', $result->title);
+    }
     public function beginTransaction()
     {
         $this->pdo->beginTransaction();
@@ -169,7 +200,6 @@ class PDOQueryBuilderTest extends TestCase
         for ($i = 1; $i <= $count; $i++) {
             $this->insertIntoDB($options);
         }
-        
     }
 
     private function insertIntoDB(array $options = [])
