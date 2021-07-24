@@ -116,7 +116,9 @@ class PDOQueryBuilder
 
     public function find(int $id)
     {
-        return $this->where('id', $id)->first();
+        $result = $this->where('id', $id)->first();
+        
+        return ($result == null) ? [] : $result;
     }
 
     public function findBy(string $column, $value)

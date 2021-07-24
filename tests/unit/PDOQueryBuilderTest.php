@@ -74,6 +74,7 @@ class PDOQueryBuilderTest extends TestCase
 
         $this->assertEquals(1, $result);
     }
+
     /**
      * @test
      */
@@ -185,6 +186,47 @@ class PDOQueryBuilderTest extends TestCase
 
         $this->assertEquals('find by attr', $result->title);
     }
+    /**
+     * @test
+     */
+    public function findMethodWillReturnEmptyArrayIfRecordDidntFound()
+    {
+        $this->multiInsertintoDB(4);
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->find(1000);
+
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * @test
+     */
+    public function getMethodWillReturnEmptyArrayIfRecordDidntFound()
+    {
+        $this->multiInsertintoDB(4);
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title', 'dummy')
+            ->get();
+
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * @test
+     */
+    public function firstMethodWillReturnNullIfRecordDidntFound()
+    {
+        $this->multiInsertintoDB(4);
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title', 'dummy')
+            ->first();
+
+        $this->assertEquals(null, $result);
+    }
+
     public function beginTransaction()
     {
         $this->pdo->beginTransaction();
