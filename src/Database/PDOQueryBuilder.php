@@ -4,6 +4,7 @@ namespace App\Database;
 
 use App\Contracts\DatabaseConnectionInterface;
 use PDO;
+use PhpParser\Node\Stmt\Continue_;
 
 class PDOQueryBuilder
 {
@@ -11,9 +12,13 @@ class PDOQueryBuilder
 
     protected $table;
 
+    protected $columns;
+
     protected $conditions;
 
     protected $values;
+
+    protected $statment;
 
     public function __construct(DatabaseConnectionInterface $pdoconnection)
     {
@@ -41,17 +46,24 @@ class PDOQueryBuilder
 
         $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$placeholder})";
 
-        $query = $this->pdo->prepare($sql);
+        $this->values = array_values($data);
 
-        $query->execute(array_values($data));
+        $this->execute($sql);
 
         return (int) $this->pdo->lastInsertId();
     }
 
     public function where(string $column, string $value)
     {
-        $this->conditions[] = "{$column} = ?";
+        if(is_null($this->conditions)){
+            
+            $this->conditions = "{$column} = ?";
 
+        }else{
+
+            $this->conditions .= " AND {$column} = ?";
+        }
+        
         $this->values[] = $value;
 
         return $this;
@@ -62,54 +74,42 @@ class PDOQueryBuilder
         $fields = [];
 
         foreach ($data as $column => $value) {
-            $fields[] = "{$column} = '{$value}'";
+            $fields[] = "`{$column}` = '{$value}'";
         }
 
-        $fields = implode(',', $fields);
+        $fields = implode(' , ',$fields);
+        
+        $sql = "UPDATE {$this->table} SET {$fields} WHERE {$this->conditions}";
 
-        $conditions = implode(' and ', $this->conditions);
+        $this->execute($sql);
 
-        $sql = "UPDATE {$this->table} SET {$fields} WHERE {$conditions}";
-
-        $query = $this->pdo->prepare($sql);
-
-        $query->execute($this->values);
-
-        return $query->rowCount();
+        return $this->statment->rowCount();
     }
 
 
     public function delete()
     {
-        $conditions = implode(' and ', $this->conditions);
+        $sql = "DELETE FROM {$this->table} WHERE {$this->conditions}";
 
-        $sql = "DELETE FROM {$this->table} WHERE {$conditions}";
+        $this->execute($sql);
 
-        $query = $this->pdo->prepare($sql);
-
-        $query->execute($this->values);
-
-        return $query->rowCount();
+        return $this->statment->rowCount();
     }
 
     public function get(array $columns = ['*'])
-    {
-        $conditions = implode(' and ', $this->conditions);
+    {   
+        $this->setColumns($columns);
 
-        $columns = implode(',', $columns);
+        $sql = "SELECT {$this->columns} FROM {$this->table} WHERE {$this->conditions}";
 
-        $sql = "SELECT {$columns} FROM {$this->table} WHERE {$conditions}";
+        $this->execute($sql);
 
-        $query = $this->pdo->prepare($sql);
-
-        $query->execute($this->values);
-
-        return $query->fetchAll();
+        return $this->statment->fetchAll();
     }
 
     public function first(array $columns = ['*'])
     {
-        $data = $this->get();
+        $data = $this->get($columns);
 
         return empty($data) ? null : $data[0];
     }
@@ -117,7 +117,7 @@ class PDOQueryBuilder
     public function find(int $id)
     {
         $result = $this->where('id', $id)->first();
-        
+
         return ($result == null) ? [] : $result;
     }
 
@@ -148,5 +148,33 @@ class PDOQueryBuilder
 
             $this->pdo->prepare("truncate `{$table}`")->execute();
         }
+    }
+
+    private function execute(string $sql)
+    {
+        $this->statment = $this->pdo->prepare($sql);
+
+        $this->statment->execute($this->values);
+
+        $this->values = [];
+
+        $this->columns = [];
+
+        return $this;
+    }
+
+    private function setColumns(array $columns)
+    {
+        foreach($columns as $column){
+
+            if($column == '*') continue;
+
+            $columns[] = '`'.$column.'`';
+
+        }
+
+        $columns = implode(',' , $columns);
+
+        $this->columns = $columns;
     }
 }

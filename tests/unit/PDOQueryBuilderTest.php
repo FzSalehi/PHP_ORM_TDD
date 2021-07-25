@@ -78,13 +78,29 @@ class PDOQueryBuilderTest extends TestCase
     /**
      * @test
      */
+    public function itCanUpdateExistedDataWithMultiConditions()
+    {
+        $this->multiInsertintoDB(4, ['title' => 'same text']);
+        $this->insertIntoDB([
+            'title' => 'same text',
+            'link' => 'http://new.link.fz'
+        ]);
+
+        $result = $this->queryBuilder
+            ->where('title', 'same text')
+            ->where('link', 'http://new.link.fz')
+            ->update(['title' => 'updated']);
+
+        $this->assertEquals(1, $result);
+    }
+
+    /**
+     * @test
+     */
     public function itCanDeleteRecords()
     {
         // create 4 records
-        $this->insertIntoDB();
-        $this->insertIntoDB();
-        $this->insertIntoDB();
-        $this->insertIntoDB();
+        $this->multiInsertintoDB(4);
 
         $result = $this->queryBuilder
             ->table('bugs')
@@ -107,6 +123,27 @@ class PDOQueryBuilderTest extends TestCase
             ->get();
 
         $this->assertEquals(4, count($result));
+    }
+
+    /**
+     * @test
+     */
+    public function itCanFetchDataWithMultiConditions()
+    {
+        $this->multiInsertintoDB(2,['title' => 'same title']);
+        $this->multiInsertintoDB(2,[
+            'title' => 'same title',
+            'link' => 'http://other.link.fz',
+        ]);
+
+
+        $result = $this->queryBuilder
+            ->table('bugs')
+            ->where('title', 'same title')
+            ->where('link', 'http://other.link.fz')
+            ->get();
+
+        $this->assertEquals(2, count($result));
     }
 
     /**
@@ -161,7 +198,7 @@ class PDOQueryBuilderTest extends TestCase
     {
         $this->insertIntoDB();
         $id = $this->insertIntoDB(['title' => 'find by id']);
-
+        
         $result = $this->queryBuilder
             ->table('bugs')
             ->find($id);
