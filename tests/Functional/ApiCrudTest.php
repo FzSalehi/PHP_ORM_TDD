@@ -45,13 +45,11 @@ class ApiCrudTest extends TestCase
                 'user_id' => 1,
             ]
         ];
-        
+
         $response = $this->httpClient->post('index.php', $data);
 
         $this->assertEquals(200, $response->getStatusCode());
 
-        echo $response->getBody();
-        
         $bug = $this->queryBuilder
             ->table('bugs')
             ->where('title', $data['json']['title'])
@@ -59,6 +57,80 @@ class ApiCrudTest extends TestCase
             ->first();
 
         $this->assertNotNull($bug);
+
+        return $bug;
+    }
+
+    /**
+     * @test
+     * @depends itCanCreateSingleRecord
+     */
+    public function itCanUpdateSingleRecord($record)
+    {
+        $data = [
+            'json' => [
+                'id' => $record->id,
+                'title' => 'new title',
+                'text' => 'new text',
+            ]
+        ];
+
+        $response = $this->httpClient->put('index.php', $data);
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $newBug = $this->queryBuilder
+            ->table('bugs')
+            ->find($record->id);
+
+        $this->assertNotNull($newBug);
+
+        $this->assertEquals('new title', $newBug->title);
+    }
+
+    /**
+     * @test
+     * @depends itCanCreateSingleRecord
+     */
+    public function itCanFetchSingleRecord($record)
+    {
+        $data = [
+            'json' => [
+                'id' => $record->id,
+            ]
+        ];
+
+        $response = $this->httpClient->get('index.php', $data);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        
+        $this->assertArrayHasKey('id',json_decode($response->getBody(),true));
+        
+    }
+
+
+    /**
+     * @test
+     * @depends itCanCreateSingleRecord
+     */
+    public function itCanDeleteSingleRecord($record)
+    {
+        $data = [
+            'json' => [
+                'id' => $record->id,
+            ]
+        ];
+
+        $response = $this->httpClient->delete('index.php', $data);
+
+        $this->assertEquals(204, $response->getStatusCode());
+
+        $bug = $this->queryBuilder
+            ->table('bugs')
+            ->find($record->id);
+
+        $this->assertEmpty($bug);
+
     }
 
     private function getConfig()
