@@ -21,6 +21,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+
+    $queryBuilder->table('bugs')
+                ->where('id',request()['id'])
+                ->update(request());
+
+    json_response(null, 200);
+
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+
+    $bug = $queryBuilder->table('bugs')
+                ->find(request()['id']);
+
+    json_response($bug, 200);
+
+}
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+
+    $queryBuilder->table('bugs')
+                ->where('id',request()['id'])
+                ->delete();
+
+    json_response(null, 204);
+
+}
+
 function request()
 {
     return json_decode(file_get_contents('php://input'), true);
@@ -34,7 +64,7 @@ function json_response($data = null, $statusCode = 200)
 
     http_response_code($statusCode);
 
-    //echo json_encode($data);
+    echo json_encode($data);
 
     exit();
 }
